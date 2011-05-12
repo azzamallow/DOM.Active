@@ -1,8 +1,18 @@
 String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
+};
+
+commentedNodes = function(element) {
+    var nodes = [];
+    for (var i = 0; i < element.childNodes.length; i++) {
+        if(element.childNodes[i].nodeName == '#comment') {
+            nodes.push(element.childNodes[i]);
+        }
+    }
+    return nodes;
 }
 
-var JS = {}
+var JS = {};
 JS.Model = function(model) {
     var modelObject = function(attributes) { 
 		for (var key in attributes) {
@@ -15,22 +25,35 @@ JS.Model = function(model) {
 	modelObject.prototype = {
 		definedAttributes: [],
 		element: null,
+        commentsOnly: [],
 		
 		save: function() {
 			if (this.element !== null) {
 				for (var i = 0; i < this.definedAttributes.length; i++) {
 					var attributeElement = this.element.getElementsByClassName(this.definedAttributes[i])[0];
-					attributeElement.innerHTML = '';
-					attributeElement.appendChild(document.createTextNode(this[this.definedAttributes[i]]));
+                    if (attributeElement != null) {
+    					attributeElement.innerHTML = '';
+    					attributeElement.appendChild(document.createTextNode(this[this.definedAttributes[i]]));
+                    }
 				}
+                var nodes = commentedNodes(this.element);
+                for (var i = 0; i < nodes.length; i++) {
+                    var attribute = nodes[i].textContent.split(':')[0];
+                    nodes[i].textContent = attribute + ': ' + this[attribute];
+                }
 			} else {
 				this.element = document.createElement('div');
 				this.element.className = modelObject.nameOfModel();
 				for (var i = 0; i < this.definedAttributes.length; i++) {
-					var attributeElement = document.createElement('div');
-					attributeElement.className = this.definedAttributes[i];
-					attributeElement.appendChild(document.createTextNode(this[this.definedAttributes[i]]));
-					this.element.appendChild(attributeElement);
+                    if (this.commentsOnly.indexOf(this.definedAttributes[i]) != -1) {
+                        var comments = document.createComment(this.definedAttributes[i] + ': ' + this[this.definedAttributes[i]]);
+                        this.element.appendChild(comments);
+                    } else {
+    					var attributeElement = document.createElement('div');
+    					attributeElement.className = this.definedAttributes[i];
+    					attributeElement.appendChild(document.createTextNode(this[this.definedAttributes[i]]));
+    					this.element.appendChild(attributeElement);
+                    }
 				}
 				document.body.appendChild(this.element);
 			}
@@ -42,8 +65,11 @@ JS.Model = function(model) {
 			case 'definition':
 				for (var i = 0; i < model.definition.length; i++) {
 					var attribute = model.definition[i];
-					modelObject.prototype[attribute] = null;
-					modelObject.prototype.definedAttributes.push(attribute);
+					modelObject.prototype[attribute.name] = null;
+					modelObject.prototype.definedAttributes.push(attribute.name);
+                    if (attribute.conditions.indexOf(commentsOnly) != -1) {
+                        modelObject.prototype.commentsOnly.push(attribute.name);
+                    }
 				}
 				break;
 			case 'static':
@@ -74,11 +100,11 @@ JS.Model = function(model) {
 	};
 	
 	for (var i = 0; i < model.definition.length; i++) {
-		modelObject['findBy' + model.definition[i].capitalize()] = (function(attribute) {
+		modelObject['findBy' + model.definition[i].name.capitalize()] = (function(attribute) {
 			return function(value) {
 				return modelObject.findBy(attribute, value);
 			};
-		})(model.definition[i]);
+		})(model.definition[i].name);
 	}
 	
 	modelObject.nameOfModel = function() { 
@@ -91,9 +117,8 @@ JS.Model = function(model) {
 };
 
 function attribute() {
-	var name = arguments[0];
-	return name;
+    args = Array.prototype.slice.call(arguments);
+	return {name: args[0], conditions: args.slice(1)};
 }
  
-var notDisplayable = 'notDisplayable';
-var comments = 'comments';
+var commentsOnly = 'commentsOnly';
