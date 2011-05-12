@@ -86,9 +86,14 @@ JS.Model = function(model) {
 		var models = document.getElementsByClassName(modelObject.nameOfModel());
 		for (var i = 0; i < models.length; i++) {
 			var attributes = {};
-			for (var j = 0; j < models[i].children.length; j++) {
-				attributes[models[i].children[j].className] = models[i].children[j].innerHTML;
-			}
+			for (var j = 0; j < models[i].childNodes.length; j++) {
+                if(models[i].childNodes[j].nodeName == '#comment') {
+                    var values = models[i].childNodes[j].textContent.split(':');
+                    attributes[values[0]] = values[1].trim();
+                } else {
+				    attributes[models[i].childNodes[j].className] = models[i].childNodes[j].innerHTML;
+                }
+            }
 			
 			if (attributes[attribute] == value) {
 				var model = new modelObject(attributes);
