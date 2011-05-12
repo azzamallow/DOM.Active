@@ -4,7 +4,7 @@ String.prototype.capitalize = function() {
 
 var JS = {}
 JS.Model = function(model) {
-	var modelObject = function(attributes) { 
+    var modelObject = function(attributes) { 
 		for (var key in attributes) {
 			if (this[key] !== undefined) {
 				this[key] = attributes[key];
@@ -17,7 +17,7 @@ JS.Model = function(model) {
 		element: null,
 		
 		save: function() {
-			if (this.element != null) {
+			if (this.element !== null) {
 				for (var i = 0; i < this.definedAttributes.length; i++) {
 					var attributeElement = this.element.getElementsByClassName(this.definedAttributes[i])[0];
 					attributeElement.innerHTML = '';
@@ -71,24 +71,24 @@ JS.Model = function(model) {
 			}
 		}
 		return null;
-	}
+	};
 	
 	for (var i = 0; i < model.definition.length; i++) {
-		modelObject['findBy' + model.definition[i].capitalize()] = function(value) {
-			return zfunction(attribute) {
+		modelObject['findBy' + model.definition[i].capitalize()] = (function(attribute) {
+			return function(value) {
 				return modelObject.findBy(attribute, value);
-			}(model.definition[i]);
-		}
+			};
+		})(model.definition[i]);
 	}
 	
 	modelObject.nameOfModel = function() { 
 	    for (var name in window) 
 	      if (window[name] == this) 
 	        return name.toLowerCase(); 
-	  }
+	  };
 
 	return modelObject;
-}
+};
 
 function attribute() {
 	var name = arguments[0];
