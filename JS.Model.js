@@ -1,8 +1,10 @@
+// Helper/Util object required
+
 String.prototype.capitalize = function() {
     return this.charAt(0).toUpperCase() + this.slice(1);
 };
 
-commentedNodes = function(element) {
+var commentedNodes = function(element) {
     var nodes = [];
     for (var i = 0; i < element.childNodes.length; i++) {
         if(element.childNodes[i].nodeName == '#comment') {
@@ -10,7 +12,28 @@ commentedNodes = function(element) {
         }
     }
     return nodes;
+};
+
+var singleOrArray = function(object) {
+    if (object.length == 1) {
+        return object[0];
+    } else {
+        return object;
+    }
+};
+
+// Helper/Util object required
+
+// Definition object required
+
+function attribute() {
+    args = Array.prototype.slice.call(arguments);
+    return {name: args[0], conditions: args.slice(1)};
 }
+ 
+var commentsOnly = 'commentsOnly';
+
+// Definition object required
 
 var JS = {};
 JS.Models = [];
@@ -127,11 +150,7 @@ JS.Model = function(model) {
 			}
 		}
         
-        if (found.length == 1) {
-            return found[0];
-        } else {
-            return found;
-        }
+        return singleOrArray(found);
 	};
 	
 	for (var i = 0; i < model.definition.length; i++) {
@@ -150,10 +169,3 @@ JS.Model = function(model) {
       
 	return modelObject;
 };
-
-function attribute() {
-    args = Array.prototype.slice.call(arguments);
-	return {name: args[0], conditions: args.slice(1)};
-}
- 
-var commentsOnly = 'commentsOnly';
