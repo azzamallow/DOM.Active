@@ -13,6 +13,7 @@ commentedNodes = function(element) {
 }
 
 var JS = {};
+JS.Models = [];
 JS.Model = function(model) {
     var modelObject = function(attributes) { 
 		for (var key in attributes) {
@@ -20,6 +21,7 @@ JS.Model = function(model) {
 				this[key] = attributes[key];
 			}
 		}
+        JS.Models.push(this);
 	};
 	
 	modelObject.prototype = {
@@ -27,7 +29,7 @@ JS.Model = function(model) {
 		element: null,
         commentsOnly: [],
 		
-		save: function() {
+		save: function(elementToSaveIn) {
 			if (this.element !== null) {
 				for (var i = 0; i < this.definedAttributes.length; i++) {
 					var attributeElement = this.element.getElementsByClassName(this.definedAttributes[i])[0];
@@ -55,7 +57,19 @@ JS.Model = function(model) {
     					this.element.appendChild(attributeElement);
                     }
 				}
-				document.body.appendChild(this.element);
+                
+                if (elementToSaveIn != null) {
+                   elementToSaveIn.appendChild(this.element); 
+                } else {    
+                    var wrappers = document.getElementsByClassName(modelObject.nameOfModel() + 's');
+                    if (wrappers.length == 0) {
+                        wrapper = document.createElement('div');
+                        wrapper.className = modelObject.nameOfModel() + 's';
+                        document.body.appendChild(wrapper);
+                    }
+                    wrappers = document.getElementsByClassName(modelObject.nameOfModel() + 's');
+    				wrappers[0].appendChild(this.element);
+                }
 			}
 		}
 	};
@@ -84,6 +98,7 @@ JS.Model = function(model) {
 	
 	modelObject.findBy = function(attribute, value) {
 		var models = document.getElementsByClassName(modelObject.nameOfModel());
+        var found = [];
 		for (var i = 0; i < models.length; i++) {
 			var attributes = {};
 			for (var j = 0; j < models[i].childNodes.length; j++) {
@@ -96,12 +111,27 @@ JS.Model = function(model) {
             }
 			
 			if (attributes[attribute] == value) {
-				var model = new modelObject(attributes);
-				model.element = models[i];
-				return model;
+                var added = false;
+                for(var j = 0; j < JS.Models.length; j++) {
+                    if (JS.Models[j].element == models[i]) {
+                        found.push(JS.Models[j]);
+                        added = true;
+                    }
+                }
+                
+                if (added == false) {
+    				var model = new modelObject(attributes);
+    				model.element = models[i];
+    				found.push(model);
+                }
 			}
 		}
-		return null;
+        
+        if (found.length == 1) {
+            return found[0];
+        } else {
+            return found;
+        }
 	};
 	
 	for (var i = 0; i < model.definition.length; i++) {
@@ -117,7 +147,7 @@ JS.Model = function(model) {
 	      if (window[name] == this) 
 	        return name.toLowerCase(); 
 	  };
-
+      
 	return modelObject;
 };
 
