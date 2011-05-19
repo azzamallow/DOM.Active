@@ -35,16 +35,16 @@ var commentsOnly = 'commentsOnly';
 
 // Definition object required
 
-var JS = {};
-JS.Models = [];
-JS.Model = function(model) {
+var DOM = {};
+DOM.Actives = [];
+DOM.Active = function(model) {
     var modelObject = function(attributes) { 
 		for (var key in attributes) {
 			if (this[key] !== undefined) {
 				this[key] = attributes[key];
 			}
 		}
-        JS.Models.push(this);
+        DOM.Actives.push(this);
 	};
 	
 	modelObject.prototype = {
@@ -135,9 +135,9 @@ JS.Model = function(model) {
 			
 			if (attributes[attribute] == value) {
                 var added = false;
-                for(var j = 0; j < JS.Models.length; j++) {
-                    if (JS.Models[j].element == models[i]) {
-                        found.push(JS.Models[j]);
+                for(var j = 0; j < DOM.Actives.length; j++) {
+                    if (DOM.Actives[j].element == models[i]) {
+                        found.push(DOM.Actives[j]);
                         added = true;
                     }
                 }

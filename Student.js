@@ -1,4 +1,4 @@
-var Student = JS.Model({
+var Student = DOM.Active({
   definition: [
     attribute('name'),
     attribute('subject'),
