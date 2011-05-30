@@ -6,10 +6,10 @@ var Student = DOM.Active({
   ],
 
   enrol: function() {
-	alert(this.name);
+    alert(this.name);
   },
 
-  static: {
+  staticFunctions: {
     blah: function() {
 	    alert('staticFunction');
 	  }
