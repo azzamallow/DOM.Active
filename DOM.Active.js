@@ -10,15 +10,12 @@ var commentsOnly = 'commentsOnly';
 var DOM = {};
 DOM.Actives = [];
 DOM.Active = function(activeAttributes) {
-    var activeObject = function(attributes) {
-        var key;
-        for (key in attributes) {
-			if (attributes.hasOwnProperty(key) && this[key] !== undefined) {
-				this[key] = attributes[key];
-			}
-		}
-        DOM.Actives.push(this);
-	};
+    var unique = Date.now();
+    var activeObject = function(uniqy) {
+        if (uniqy !== unique) {
+            throw new Error("Please use '" + capitalize(activeName()) + ".create()' to create a new instance of " + capitalize(activeName()) + ".");
+        }
+    };
     
     var activeName = function() {
         var name;
@@ -50,12 +47,12 @@ DOM.Active = function(activeAttributes) {
     var capitalize = function(value) {
         return value.charAt(0).toUpperCase() + value.slice(1);
     };
-	
+    
 	activeObject.prototype = {
 		definedAttributes: [],
 		element: null,
         commentsOnly: [],
-		
+        
 		save: function(elementToSaveIn) {
             var i, attributeElement;
 			if (this.element !== null) {
@@ -132,6 +129,19 @@ DOM.Active = function(activeAttributes) {
             }
         }
     }());
+    
+    activeObject.create = function(attributes) {
+        var newActiveObject = new activeObject(unique);
+        var key;
+        for (key in attributes) {
+            if (attributes.hasOwnProperty(key) && newActiveObject[key] !== undefined) {
+                newActiveObject[key] = attributes[key];
+            }
+        }
+        DOM.Actives.push(newActiveObject);
+        
+        return newActiveObject;
+    };
 	
 	activeObject.findBy = function(attribute, value) {
 		var elements = document.getElementsByClassName(activeName());
