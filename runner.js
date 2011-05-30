@@ -8,6 +8,10 @@ aaronAgain.subject = 'physics';
 aaronAgain.identification = '55';
 aaronAgain.save();
 
+DOM.Actives = [];
+
+var aaronFoundAndNew = Student.findByName('aaron');
+
 areEqual = document.createElement('div');
 areEqual.innerHTML = 'are equal = ' + (aaronAgain == aaron);
 document.body.appendChild(areEqual);

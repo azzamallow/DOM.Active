@@ -11,6 +11,7 @@ var DOM = {};
 DOM.Actives = [];
 DOM.Active = function(activeAttributes) {
     var unique = Date.now();
+    
     var activeObject = function(uniqy) {
         if (uniqy !== unique) {
             throw new Error("Please use '" + capitalize(activeName()) + ".create()' to create a new instance of " + capitalize(activeName()) + ".");
@@ -168,7 +169,7 @@ DOM.Active = function(activeAttributes) {
                 }
                 
                 if (added === false) {
-                    var newActiveObject = new activeObject(attributes);
+                    var newActiveObject = activeObject.create(attributes);
                     newActiveObject.element = elements[i];
                     found.push(newActiveObject);
                 }
