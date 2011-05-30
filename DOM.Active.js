@@ -9,16 +9,25 @@ var commentsOnly = 'commentsOnly';
 
 var DOM = {};
 DOM.Actives = [];
-DOM.Active = function(model) {
-    var modelObject = function(attributes) {
+DOM.Active = function(activeAttributes) {
+    var activeObject = function(attributes) {
         var key;
-    	for (key in attributes) {
+        for (key in attributes) {
 			if (attributes.hasOwnProperty(key) && this[key] !== undefined) {
 				this[key] = attributes[key];
 			}
 		}
         DOM.Actives.push(this);
 	};
+    
+    var activeName = function() {
+        var name;
+        for (name in window) {
+            if (window[name] === activeObject) {
+                return name.toLowerCase();
+            }
+        }
+    };
     
     var commentedNodes = function(element) {
         var i, nodes = [];
@@ -42,7 +51,7 @@ DOM.Active = function(model) {
         return value.charAt(0).toUpperCase() + value.slice(1);
     };
 	
-	modelObject.prototype = {
+	activeObject.prototype = {
 		definedAttributes: [],
 		element: null,
         commentsOnly: [],
@@ -64,7 +73,7 @@ DOM.Active = function(model) {
                 }
 			} else {
 				this.element = document.createElement('div');
-				this.element.className = modelObject.nameOfModel();
+				this.element.className = activeName();
 				for (i = 0; i < this.definedAttributes.length; i++) {
                     if (this.commentsOnly.indexOf(this.definedAttributes[i]) !== -1) {
                         var comments = document.createComment(this.definedAttributes[i] + ': ' + this[this.definedAttributes[i]]);
@@ -80,76 +89,78 @@ DOM.Active = function(model) {
                 if (elementToSaveIn !== undefined) {
                    elementToSaveIn.appendChild(this.element); 
                 } else {    
-                    var wrappers = document.getElementsByClassName(modelObject.nameOfModel() + 's');
+                    var wrappers = document.getElementsByClassName(activeName() + 's');
                     if (wrappers.length === 0) {
                         var wrapper = document.createElement('div');
-                        wrapper.className = modelObject.nameOfModel() + 's';
+                        wrapper.className = activeName() + 's';
                         document.body.appendChild(wrapper);
                     }
-                    wrappers = document.getElementsByClassName(modelObject.nameOfModel() + 's');
+                    wrappers = document.getElementsByClassName(activeName() + 's');
                     wrappers[0].appendChild(this.element);
                 }
 			}
 		}
 	};
 	
-    var key;
-	for (key in model) {
-        if (model.hasOwnProperty(key)) {
-            switch(key) {
-                case 'definition':
-                    var i;
-                    for (i = 0; i < model.definition.length; i++) {
-                        var attribute = model.definition[i];
-                        modelObject.prototype[attribute.name] = null;
-                        modelObject.prototype.definedAttributes.push(attribute.name);
-                        if (attribute.conditions.indexOf(commentsOnly) !== -1) {
-                            modelObject.prototype.commentsOnly.push(attribute.name);
+    (function defineAttributesAndFunctions() {
+        var key;
+        for (key in activeAttributes) {
+            if (activeAttributes.hasOwnProperty(key)) {
+                switch(key) {
+                    case 'definition':
+                        var i;
+                        for (i = 0; i < activeAttributes.definition.length; i++) {
+                            var attribute = activeAttributes.definition[i];
+                            activeObject.prototype[attribute.name] = null;
+                            activeObject.prototype.definedAttributes.push(attribute.name);
+                            if (attribute.conditions.indexOf(commentsOnly) !== -1) {
+                                activeObject.prototype.commentsOnly.push(attribute.name);
+                            }
                         }
-                    }
-                    break;
-                case 'static':
-                    var method;
-                    for(method in model.staticFunctions) {
-                        if (model.staticFunctions.hasOwnProperty(method)) {
-                            modelObject[method] =  model.staticFunctions[method];
+                        break;
+                    case 'staticFunctions':
+                        var staticFunction;
+                        for(staticFunction in activeAttributes.staticFunctions) {
+                            if (activeAttributes.staticFunctions.hasOwnProperty(staticFunction)) {
+                                activeObject[staticFunction] =  activeAttributes.staticFunctions[staticFunction];
+                            }
                         }
-                    }
-                    break;
-                default:
-                    modelObject.prototype[key] = model[key];
+                        break;
+                    default:
+                        activeObject.prototype[key] = activeAttributes[key];
+                }
             }
         }
-	}
+    }());
 	
-	modelObject.findBy = function(attribute, value) {
-		var models = document.getElementsByClassName(modelObject.nameOfModel());
+	activeObject.findBy = function(attribute, value) {
+		var elements = document.getElementsByClassName(activeName());
         var found = [];
         var i, j;
-		for (i = 0; i < models.length; i++) {
+		for (i = 0; i < elements.length; i++) {
 			var attributes = {};
-			for (j = 0; j < models[i].childNodes.length; j++) {
-                if(models[i].childNodes[j].nodeName === '#comment') {
-                    var values = models[i].childNodes[j].textContent.split(':');
+			for (j = 0; j < elements[i].childNodes.length; j++) {
+                if(elements[i].childNodes[j].nodeName === '#comment') {
+                    var values = elements[i].childNodes[j].textContent.split(':');
                     attributes[values[0]] = values[1].trim();
                 } else {
-				    attributes[models[i].childNodes[j].className] = models[i].childNodes[j].innerHTML;
+				    attributes[elements[i].childNodes[j].className] = elements[i].childNodes[j].innerHTML;
                 }
             }
 			
 			if (attributes[attribute] === value) {
                 var added = false;
                 for(j = 0; j < DOM.Actives.length; j++) {
-                    if (DOM.Actives[j].element === models[i]) {
+                    if (DOM.Actives[j].element === elements[i]) {
                         found.push(DOM.Actives[j]);
                         added = true;
                     }
                 }
                 
                 if (added === false) {
-                    var model = new modelObject(attributes);
-                    model.element = models[i];
-                    found.push(model);
+                    var newActiveObject = new activeObject(attributes);
+                    newActiveObject.element = elements[i];
+                    found.push(newActiveObject);
                 }
 			}
 		}
@@ -160,23 +171,14 @@ DOM.Active = function(model) {
     (function defineFindByFunctions() {
         var findBy = function(attribute) {
             return function(value) {
-                return modelObject.findBy(attribute, value);
+                return activeObject.findBy(attribute, value);
             };
         };
         var i;
-        for (i = 0; i < model.definition.length; i++) {
-            modelObject['findBy' + capitalize(model.definition[i].name)] = findBy(model.definition[i].name);
+        for (i = 0; i < activeAttributes.definition.length; i++) {
+            activeObject['findBy' + capitalize(activeAttributes.definition[i].name)] = findBy(activeAttributes.definition[i].name);
         }
     }());
-	
-	modelObject.nameOfModel = function() {
-        var name;
-        for (name in window) {
-            if (window[name] === this) {
-                return name.toLowerCase();
-            }
-        }
-    };
-      
-	return modelObject;
+
+    return activeObject;
 };
