@@ -118,7 +118,7 @@ DOM.Active = function(activeAttributes) {
                         break;
                     case 'staticFunctions':
                         var staticFunction;
-                        for(staticFunction in activeAttributes.staticFunctions) {
+                        for (staticFunction in activeAttributes.staticFunctions) {
                             if (activeAttributes.staticFunctions.hasOwnProperty(staticFunction)) {
                                 activeObject[staticFunction] =  activeAttributes.staticFunctions[staticFunction];
                             }
@@ -180,11 +180,11 @@ DOM.Active = function(activeAttributes) {
 	};
 	
     (function defineFindByFunctions() {
-        var findBy = function(attribute) {
+        function findBy(attribute) {
             return function(value) {
                 return activeObject.findBy(attribute, value);
             };
-        };
+        }
         var i;
         for (i = 0; i < activeAttributes.definition.length; i++) {
             activeObject['findBy' + capitalize(activeAttributes.definition[i].name)] = findBy(activeAttributes.definition[i].name);
